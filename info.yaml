@@ -19,6 +19,8 @@ project:
     - "project.v"
     - "hvsync_generator.v"
     - "track_gen.v"
+    - "motor_core.v"
+    - "motor_handler.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 pinout:

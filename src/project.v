@@ -36,8 +36,6 @@ module tt_um_KK_VGA01(
   // Suppress unused signals warning
   wire _unused_ok = &{ena, ui_in, uio_in};
 
-  reg [9:0] counter;
-
   hvsync_generator hvsync_gen(
     .clk(clk),
     .reset(~rst_n),
@@ -48,29 +46,33 @@ module tt_um_KK_VGA01(
     .vpos(pix_y)
   );
 
-  wire trkon;
-  track_gen track(
+  wire[7:0] mt_ctrl;
+  motor_handler mctrl(
     .hpos(pix_x),
     .vpos(pix_y),
+    .hsync(hsync),
+    .vsync(vsync),
     .clk(clk),
-    .trkout(trkon)
+    .reset(~rst_n),
+    .ctrl(mt_ctrl)
   );
-  
-  wire [9:0] moving_x = pix_x + counter;
 
-  assign R = video_active ? {2'b00} : 2'b00;
-  assign G = video_active ? {trkon, 1'b1} : 2'b00;
-  assign B = video_active ? {2'b00} : 2'b00;
-  
-  always @(posedge vsync, negedge rst_n) begin
-    if (~rst_n) begin
-      counter <= 0;
-    end else begin
-      counter <= counter + 1;
-    end
-  end
+  wire sp1on, sp2on, sp3on, sp4on;
+  motor_core motor1( .ctrl(mt_ctrl), .clk(clk), .steer(ui_in[0]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp1on) );
+  motor_core motor2( .ctrl(mt_ctrl), .clk(clk), .steer(ui_in[1]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp2on) );
+  motor_core motor3( .ctrl(mt_ctrl), .clk(clk), .steer(ui_in[2]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp3on) );
+  motor_core motor4( .ctrl(mt_ctrl), .clk(clk), .steer(ui_in[3]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp4on) );
 
+  wire rect = ~(pix_x[8] | pix_y[8]);
+  wire mR = sp1on | sp4on;
+  wire mG1 = sp2on | sp3on | sp4on;
+  wire mG0 = sp2on | sp4on;
+  wire mB = sp3on;
+  assign R = video_active ? {mR, mR} : 2'b00;
+  assign G = video_active ? {mG1, mG0|~rect} : 2'b00;
+  assign B = video_active ? {mB, mB} : 2'b00;
+  
   // Suppress unused signals warning
-  wire _unused_ok_ = &{moving_x, pix_y};
+  //wire _unused_ok_ = &{moving_x, pix_y};
 
 endmodule
