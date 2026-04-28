@@ -22,9 +22,9 @@ module track_gen(
         3'd2: opcode = 6'b000010;   //  MSK   ry,     10,   rx
         3'd3: opcode = 6'b10x000;   //  SRT   ry,     rx,   rx
         3'd4: opcode = 6'b01x100;   //  ABS   ry, ~(rx>>1), rx
-        3'd5: opcode = 6'b011011;
-        3'd6: opcode = 6'b011011;
-        3'd7: opcode = 6'b011011;
+        3'd5: opcode = 6'bxxxxxx;
+        3'd6: opcode = 6'bxxxxxx;
+        3'd7: opcode = 6'bxxxxxx;
     endcase
   end
 
@@ -69,9 +69,9 @@ module track_gen(
     end
   end
 
-  assign trkout = trkcapt;//
+  assign trkout = trkcapt;
 
   //// Suppress unused signals warning
-  //wire _unused_ok_ = &{moving_x, pix_y};
+  wire _unused_ok_ = &{vpos[2:0]};
 
 endmodule
