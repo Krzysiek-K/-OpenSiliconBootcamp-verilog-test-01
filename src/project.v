@@ -46,7 +46,9 @@ module tt_um_KK_VGA01(
     .vpos(pix_y)
   );
 
-  wire[7:0] mt_ctrl;
+  // verilator lint_off UNOPTFLAT
+  wire[13:0] mt_ctrl;
+  // verilator lint_on UNOPTFLAT
   motor_handler mctrl(
     .hpos(pix_x),
     .vpos(pix_y),
@@ -57,11 +59,16 @@ module tt_um_KK_VGA01(
     .ctrl(mt_ctrl)
   );
 
+  reg[3:0] steer;
+  always @(posedge vsync) begin
+    steer <= ui_in[3:0];
+  end
+
   wire sp1on, sp2on, sp3on, sp4on;
-  motor_core motor1( .ctrl(mt_ctrl), .clk(clk), .steer(ui_in[0]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp1on) );
-  motor_core motor2( .ctrl(mt_ctrl), .clk(clk), .steer(ui_in[1]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp2on) );
-  motor_core motor3( .ctrl(mt_ctrl), .clk(clk), .steer(ui_in[2]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp3on) );
-  motor_core motor4( .ctrl(mt_ctrl), .clk(clk), .steer(ui_in[3]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp4on) );
+  motor_core motor1( .RESET_Y(10'd300), .ctrl(mt_ctrl), .clk(clk), .steer(steer[0]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp1on) );
+  motor_core motor2( .RESET_Y(10'd320), .ctrl(mt_ctrl), .clk(clk), .steer(steer[1]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp2on) );
+  motor_core motor3( .RESET_Y(10'd340), .ctrl(mt_ctrl), .clk(clk), .steer(steer[2]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp3on) );
+  motor_core motor4( .RESET_Y(10'd360), .ctrl(mt_ctrl), .clk(clk), .steer(steer[3]), .hpos(pix_x), .vpos(pix_y), .hsync(hsync), .spron(sp4on) );
 
   wire rect = ~(pix_x[8] | pix_y[8]);
   wire mR = sp1on | sp4on;
