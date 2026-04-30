@@ -62,9 +62,7 @@ module motor_core(
   input  wire[9:0]  vpos,
   input  wire       hsync,
   input  wire       track_in,
-  input  wire       goal_in,
-  output wire       spron,
-  output wire[2:0]  laps
+  output wire       spron
 );
   // Input signal decoding
   wire[9:0] RESET_X = 320;
@@ -83,14 +81,6 @@ module motor_core(
   always @(posedge clk) begin
     alive <= (alive & ~(spron & track_in)) | r;
   end
-
-  // Lap counter
-  reg[3:0] halflaps;
-  wire laptick = (halflaps[0] ? goal_in : ~spy[8]) & spron & alive;
-  always @(posedge clk) begin
-    halflaps <= (halflaps + {3'b000, laptick}) & {4{nr}};
-  end
-  assign laps = halflaps[3:1];
 
   // Speed handling
   reg[3:0] speed;
