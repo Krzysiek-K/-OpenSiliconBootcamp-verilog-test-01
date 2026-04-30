@@ -30,7 +30,7 @@ module motor_handler(
   input wire        vsync,
   input wire        clk,
   input wire        reset,
-  output wire[13:0] ctrl
+  output wire[14:0] ctrl
 );
   reg[1:0] reshold;
   always @(posedge vsync) begin
@@ -103,6 +103,7 @@ module motor_handler(
   end
 
   assign ctrl = {
+    hpos[0] ^ vpos[0],                      // [14] deathmask
     spdcnt[1],                              // [13] spdclk
     movgate,                                // [12:9] mov index
     movop[2],                               // [8] mov echo

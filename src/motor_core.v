@@ -55,12 +55,13 @@ endmodule
 
 module motor_core(
   input  wire[9:0]  RESET_Y,
-  input  wire[13:0] ctrl,
+  input  wire[14:0] ctrl,
   input  wire       clk,
   input  wire       steer,
   input  wire[9:0]  hpos,
   input  wire[9:0]  vpos,
   input  wire       hsync,
+  input  wire       track_in,
   output wire       spron
 );
   // Input signal decoding
@@ -71,8 +72,15 @@ module motor_core(
   wire dxy_clk = ctrl[1] & (r | steer | ~dxy_mask);
   wire[2:0] dxy_mode = ctrl[4:2];
   wire[3:0] mov_gate = ctrl[12:9];
-  wire mov_clk = ctrl[6] & |{mov_gate & speed, r};
+  wire mov_clk = ctrl[6] & |{mov_gate & speed, r} & alive;
   wire spd_clk = ctrl[13];
+  wire deathmask = ctrl[14];
+
+  // Alive
+  reg alive;
+  always @(posedge clk) begin
+    alive <= (alive & ~(spron & track_in)) | r;
+  end
 
   // Speed handling
   reg[3:0] speed;
@@ -129,7 +137,7 @@ module motor_core(
   sprite_dly stmr_x( .start(spx==hpos), .sclk(clk), .spon(spon_x));
   sprite_dly stmr_y( .start(spy==vpos), .sclk(hsync), .spon(spon_y));
 
-  assign spron = spon_x & spon_y;
+  assign spron = (spon_x & spon_y) & (alive | deathmask);
 
   // Suppress unused signals warning
   wire _unused_ok_ = &{RESET_Y};
